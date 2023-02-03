@@ -35,48 +35,29 @@ app.get('/restaurants/cuisine/:c', async (req, res) => {
 });
 
 
-// -The selected columns must include id, cuisines, name, city, resturant_id
-// -The sorting by the restaurant_id in Ascending or Descending Order based on parameter passed.
 // http://localhost:3000/restaurants?sortBy=ASC
-app.get('/restaurants', async (req, res) => {
-    const restaurants = await restaurantModel.find({}).select("id restaurant_id cuisine name city").sortByRestaurant_id(1)
-    
-    try {
-      if(restaurants.length != 0){
-        res.send(restaurants);
-      }else{
-        res.send(JSON.stringify({status:false, message: "No data found"}))
-      }
-    } catch (err) {
-      res.status(500).send(err);
-    }
-
-});
-
 // http://localhost:3000/restaurants?sortBy=DESC
 app.get('/restaurants', async (req, res) => {
-    const restaurants = await restaurantModel.find({}).select("id restaurant_id cuisine name city").sortByRestaurant_id(-1);   
-    try {
-      if(restaurants.length != 0){
+  const sortBy = req.query.sortBy;
+  const restaurants = await restaurantModel.find({}).select("id restaurant_id cuisine name city").sort({'restaurant_id': sortBy});   
+    
+  try {
+    if(restaurants.length != 0){
         res.send(restaurants);
-      }else{
+    }else{
         res.send(JSON.stringify({status:false, message: "No data found"}))
-      }
-    } catch (err) {
-      res.status(500).send(err);
     }
+  } catch (err) {
+      res.status(500).send(err);
+  }
 
 });
 
-// 7.Create REST API to return restaurants details where all cuisines are equal to Delicatessen and the city is not equal to Brooklyn
-// -The selected columns must include cuisines, name and city, but exclude id
-// -The sorting order must be Ascending Order on the name
+
 // http://localhost:3000/restaurants/Delicatessen
 app.get('/restaurants/Delicatessen', async (req, res) => {
-    const restaurants = await restaurantModel.find({})
-    .where("city").gt("Brooklyn").lt("Brooklyn")
-    .where("cuisine").equal("Delicatessen")
-    .sort({'name' : '1'})
+    const restaurants = await restaurantModel.find({city: { $ne: 'Brooklyn'},cuisine: 'Delicatessen'})
+    .sort({'name' : 1})
     .select("cuisine name city");
     
     try {
@@ -90,6 +71,8 @@ app.get('/restaurants/Delicatessen', async (req, res) => {
     }
 
 });
+
+
 
 
 //http://localhost:3000/restaurant
